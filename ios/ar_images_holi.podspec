@@ -3,7 +3,7 @@
 # Run `pod lib lint ar_quido.podspec` to validate before publishing.
 #
 Pod::Spec.new do |s|
-  s.name             = 'ar_quido'
+  s.name             = 'ar_images_holi'
   s.version          = '0.0.1'
   s.summary          = 'AR Image recognition for Flutter'
   s.description      = <<-DESC

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:ar_quido/ar_quido.dart';
+import 'package:ar_images_holi/ar_quido.dart';
 
 /// Controller for a single ARQuidoView instance running on the host platform.
 class ARQuidoViewController {

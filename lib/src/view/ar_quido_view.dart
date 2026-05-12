@@ -1,4 +1,4 @@
-import 'package:ar_quido/ar_quido.dart';
+import 'package:ar_images_holi/ar_quido.dart';
 import 'package:flutter/material.dart';
 
 /// A widget which displays a camera stream with image recognition features enabled.

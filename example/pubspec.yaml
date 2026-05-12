@@ -8,7 +8,7 @@ environment:
   flutter: ">=3.19.6"
 
 dependencies:
-  ar_quido:
+  ar_images_holi:
     path: ../
   cupertino_icons: 1.0.8
   flutter:

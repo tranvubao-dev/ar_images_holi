@@ -75,7 +75,7 @@
 
 import 'dart:io';
 
-import 'package:ar_quido/ar_quido.dart';
+import 'package:ar_images_holi/ar_quido.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
