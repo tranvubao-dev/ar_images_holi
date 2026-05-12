@@ -1,4 +1,4 @@
-import 'package:ar_images_holi/ar_quido.dart';
+import 'package:ar_images_holi/ar_images_holi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
