@@ -1,10 +1,9 @@
-name: ar_quido
+name: ar_images_holi
 description: A Flutter plugin for handling image recognition on mobile platforms
-version: 0.3.0
-repository: https://github.com/miquido/ar_quido
-issue_tracker: https://github.com/miquido/ar_quido/issues
-homepage: https://github.com/miquido/ar_quido
-documentation: https://pub.dev/documentation/ar_quido/latest/
+version: 0.0.1
+homepage: https://github.com/tranvubao-dev/ar_images_holi
+repository: https://github.com/tranvubao-dev/ar_images_holi
+
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
