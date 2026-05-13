@@ -8,7 +8,7 @@ class ARQuidoView extends StatefulWidget {
   const ARQuidoView({
     required this.referenceImageNames,
     required this.referenceImageUrl,
-    required this.onImageDetected,
+    this.onImageDetected,
     required this.server,
     this.onDetectedImageTapped,
     this.onViewCreated,
@@ -38,7 +38,7 @@ class ARQuidoView extends StatefulWidget {
 
   /// Called when one of the reference images is detected in the current camera
   /// stream.
-  final void Function(String? imageName) onImageDetected;
+  final void Function(String? imageName)? onImageDetected;
 
   /// Called when a marker for detected reference image is tapped.
   final void Function(String? imageName)? onDetectedImageTapped;

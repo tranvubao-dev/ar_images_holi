@@ -19,6 +19,7 @@ class ARQuidoViewController: UIViewController {
     var currentPlayerLooper: AVPlayerLooper?
     var currentImageName: String?
     var videoCache: [String: AVPlayerItem] = [:]
+    private var playerCache: [String: AVQueuePlayer] = [:]
     
     let updateQueue = DispatchQueue(
         label: Bundle.main.bundleIdentifier! +
@@ -56,7 +57,7 @@ class ARQuidoViewController: UIViewController {
     
     deinit {
         
-        print("ARQuidoViewController DEALLOC")
+//        print("ARQuidoViewController DEALLOC")
         
         cleanUpAR()
         
@@ -77,13 +78,16 @@ class ARQuidoViewController: UIViewController {
         
         sceneView.delegate = self
         sceneView.session.delegate = self
+        sceneView.preferredFramesPerSecond = 30
+        sceneView.rendersContinuously = false
+        sceneView.antialiasingMode = .none
         
-        let tapGesture = UITapGestureRecognizer(
-            target: self,
-            action: #selector(handleTap(_:))
-        )
-        
-        sceneView.addGestureRecognizer(tapGesture)
+//        let tapGesture = UITapGestureRecognizer(
+//            target: self,
+//            action: #selector(handleTap(_:))
+//        )
+//        
+//        sceneView.addGestureRecognizer(tapGesture)
         
         view = sceneView
         
@@ -128,14 +132,14 @@ class ARQuidoViewController: UIViewController {
                 
                 self.videoCache[imageName] = item
                 
-                print("PRELOADED: \(imageName)")
+//                print("PRELOADED: \(imageName)")
             }
         }
     }
     
     private func cleanUpAR() {
         
-        print("CLEAN UP AR")
+//        print("CLEAN UP AR")
         
         // stop AR session
         sceneView.session.pause()
@@ -173,27 +177,27 @@ class ARQuidoViewController: UIViewController {
         do {
             try AVAudioSession.sharedInstance().setActive(false)
         } catch {
-            print(error)
+//            print(error)
         }
         
-        print("AR CLEANED")
+//        print("AR CLEANED")
     }
     
-    @objc
-    func handleTap(_ gestureRecognize: UIGestureRecognizer) {
-        
-        let location =
-            gestureRecognize.location(in: sceneView)
-        
-        let hitResults =
-            sceneView.hitTest(location, options: [:])
-        
-        if hitResults.count > 0,
-           let tappedImageName = hitResults[0].node.name {
-            
-            onDetectedImageTapped(imageKey: tappedImageName)
-        }
-    }
+//    @objc
+//    func handleTap(_ gestureRecognize: UIGestureRecognizer) {
+//        
+//        let location =
+//            gestureRecognize.location(in: sceneView)
+//        
+//        let hitResults =
+//            sceneView.hitTest(location, options: [:])
+//        
+//        if hitResults.count > 0,
+//           let tappedImageName = hitResults[0].node.name {
+//            
+//            onDetectedImageTapped(imageKey: tappedImageName)
+//        }
+//    }
     
     // MARK: - Session management (Image detection setup)
     
@@ -215,9 +219,9 @@ class ARQuidoViewController: UIViewController {
 
             for imagePath in self.referenceImageUrl {
 
-                print("===================================")
-                print("LOADING LOCAL IMAGE:")
-                print(imagePath)
+//                print("===================================")
+//                print("LOADING LOCAL IMAGE:")
+//                print(imagePath)
 
                 let fileManager = FileManager.default
 
@@ -225,7 +229,7 @@ class ARQuidoViewController: UIViewController {
                     atPath: imagePath
                 )
 
-                print("FILE EXISTS: \(exists)")
+//                print("FILE EXISTS: \(exists)")
 
                 if !exists {
                     continue
@@ -235,23 +239,23 @@ class ARQuidoViewController: UIViewController {
                     contentsOfFile: imagePath
                 ) else {
 
-                    print("FAILED TO LOAD UIIMAGE")
+//                    print("FAILED TO LOAD UIIMAGE")
                     continue
                 }
 
                 guard let cgImage = image.cgImage else {
 
-                    print("CGIMAGE NIL")
+//                    print("CGIMAGE NIL")
                     continue
                 }
 
-                print("IMAGE SIZE:")
-                print("\(cgImage.width)x\(cgImage.height)")
+//                print("IMAGE SIZE:")
+//                print("\(cgImage.width)x\(cgImage.height)")
 
                 if cgImage.width < 100 ||
                     cgImage.height < 100 {
 
-                    print("IMAGE TOO SMALL")
+//                    print("IMAGE TOO SMALL")
                     continue
                 }
 
@@ -269,16 +273,16 @@ class ARQuidoViewController: UIViewController {
                     referenceImage
                 )
 
-                print("IMAGE ADDED SUCCESS")
+//                print("IMAGE ADDED SUCCESS")
             }
 
-            print("===================================")
-            print("TOTAL IMAGES:")
-            print(referenceImages.count)
+//            print("===================================")
+//            print("TOTAL IMAGES:")
+//            print(referenceImages.count)
 
             if referenceImages.isEmpty {
 
-                print("NO VALID IMAGES")
+//                print("NO VALID IMAGES")
 
                 DispatchQueue.main.async {
                     self.isResettingTracking = false
@@ -306,16 +310,13 @@ class ARQuidoViewController: UIViewController {
                     ]
                 )
 
-                print("AR SESSION STARTED")
+//                print("AR SESSION STARTED")
 
                 if !self.wasCameraInitialized {
-
                     self.onRecognitionStarted()
-
                     self.wasCameraInitialized = true
 
                 } else {
-
                     self.onRecognitionResumed()
                 }
 
@@ -351,10 +352,11 @@ extension ARQuidoViewController: ARSCNViewDelegate {
             return
         }
         
-        print("IMAGE DETECTED: \(imageName)")
+//        print("IMAGE DETECTED: \(imageName)")
+        self.currentImageName = imageName
         
         // clear video cũ
-        DispatchQueue.global(qos: .userInitiated).async {
+//        DispatchQueue.global(qos: .userInitiated).async {
             
             self.currentPlayer?.pause()
             
@@ -368,20 +370,20 @@ extension ARQuidoViewController: ARSCNViewDelegate {
             
             self.detectedImageNode = nil
             
-            let videoName =
-                (imageName as NSString)
-                .deletingPathExtension
+//            let videoName =
+//                (imageName as NSString)
+//                .deletingPathExtension
             
-            guard let videoURL = URL(
-                string:
-                    "\(self.server)\(videoName).mp4"
-            ) else {
-                
-                print("INVALID VIDEO URL")
-                return
-            }
+//            guard let videoURL = URL(
+//                string:
+//                    "\(self.server)\(videoName).mp4"
+//            ) else {
+//                
+////                print("INVALID VIDEO URL")
+//                return
+//            }
             
-            print("VIDEO URL: \(videoURL)")
+//            print("VIDEO URL: \(videoURL)")
             
             // =========================
             // CREATE LOOP PLAYER
@@ -393,7 +395,7 @@ extension ARQuidoViewController: ARSCNViewDelegate {
                 self.videoCache[imageName]
             else {
                 
-                print("VIDEO NOT PRELOADED")
+//                print("VIDEO NOT PRELOADED")
                 return
             }
             
@@ -401,6 +403,8 @@ extension ARQuidoViewController: ARSCNViewDelegate {
                 cachedItem.copy() as! AVPlayerItem
             
             let queuePlayer = AVQueuePlayer()
+//            let queuePlayer = AVQueuePlayer(playerItem: item)
+
             
             queuePlayer.automaticallyWaitsToMinimizeStalling = false
             
@@ -460,18 +464,15 @@ extension ARQuidoViewController: ARSCNViewDelegate {
             DispatchQueue.main.async {
                 
                 node.addChildNode(planeNode)
-                
                 self.detectedImageNode = planeNode
-                
                 queuePlayer.play()
-                
                 videoNode.play()
             }
             
-            print("VIDEO PLAYING")
+//            print("VIDEO PLAYING")
             
             self.onDetect(imageKey: imageName)
-        }
+//        }
     }
     
     func renderer(
@@ -492,14 +493,14 @@ extension ARQuidoViewController: ARSCNViewDelegate {
             return
         }
         
-        print("IMAGE LOST")
+//        print("IMAGE LOST")
         
         DispatchQueue.global(qos: .userInitiated).async {
             
             // stop current video
             self.currentPlayer?.pause()
             
-            self.currentPlayer?.removeAllItems()
+//            self.currentPlayer?.removeAllItems()
             
             self.currentPlayerLooper = nil
             
@@ -516,7 +517,7 @@ extension ARQuidoViewController: ARSCNViewDelegate {
             // remove old anchor
             self.session.remove(anchor: anchor)
             
-            print("READY TO DETECT AGAIN")
+//            print("READY TO DETECT AGAIN")
         }
     }
     
@@ -684,12 +685,12 @@ extension ARQuidoViewController {
                 
             } catch {
                 
-                print("Torch could not be used")
+//                print("Torch could not be used")
             }
             
         } else {
             
-            print("Torch is not available")
+//            print("Torch is not available")
         }
     }
 }

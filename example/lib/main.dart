@@ -1,81 +1,6 @@
-// import 'package:ar_quido/ar_quido.dart';
-// import 'package:flutter/material.dart';
-// import 'package:permission_handler/permission_handler.dart';
-
-// Future<void> main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Permission.camera.request();
-//   runApp(const MyApp());
-// }
-
-// class MyApp extends StatefulWidget {
-//   const MyApp({super.key});
-
-//   @override
-//   State<MyApp> createState() => _MyAppState();
-// }
-
-// class _MyAppState extends State<MyApp> {
-//   String? _recognizedImage;
-
-//   void _onImageDetected(BuildContext context, String? imageName) {
-//     if (imageName != null && _recognizedImage != imageName) {
-//       ScaffoldMessenger.of(context).showSnackBar(
-//         SnackBar(
-//           content: Text('Recognized image: $imageName'),
-//           duration: const Duration(milliseconds: 2500),
-//         ),
-//       );
-//     }
-//     setState(() {
-//       _recognizedImage = imageName;
-//     });
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: Scaffold(
-//         appBar: AppBar(
-//           title: const Text('Plugin example app'),
-//         ),
-//         body: Builder(
-//           builder: (context) {
-//             return Stack(
-//               children: [
-//                 ARQuidoView(
-//                   referenceImageNames: const [
-//                     'baotang.jpg',
-//                     'flcsafari.jpg',
-//                     'hohoankiem.jpg',
-//                     'khamphakhoahoc.jpg',
-//                     'thapcham.jpg',
-//                     'thuydienialy.jpg',
-//                   ],
-//                   referenceImageUrl: const [
-//                     'https://s3.holitech.cloud/travelqar/images/baotang.jpg',
-//                     'https://s3.holitech.cloud/travelqar/images/flcsafari.jpg',
-//                     'https://s3.holitech.cloud/travelqar/images/hohoankiem.jpg',
-//                     'https://s3.holitech.cloud/travelqar/images/khamphakhoahoc.jpg',
-//                     'https://s3.holitech.cloud/travelqar/images/thapcham.jpg',
-//                     'https://s3.holitech.cloud/travelqar/images/thuydienialy.jpg',
-//                   ],
-//                   server: "https://s3.holitech.cloud/travelqar/mp4/",
-//                   onImageDetected: (imageName) =>
-//                       _onImageDetected(context, imageName),
-//                 ),
-//               ],
-//             );
-//           },
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'dart:io';
-
-import 'package:ar_images_holi/ar_quido.dart';
+import 'package:ar_images_holi/ar_images_holi.dart';
+import 'package:ar_quido_example/model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -85,7 +10,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Permission.camera.request();
-
   runApp(const MyApp());
 }
 
@@ -97,98 +21,63 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String? _recognizedImage;
-
   List<String> cachedImagePaths = [];
 
-  final List<String> imageUrls = [
-    'https://s3.holitech.cloud/travelqar/images/baotang.jpg',
-    'https://s3.holitech.cloud/travelqar/images/flcsafari.jpg',
-    'https://s3.holitech.cloud/travelqar/images/hohoankiem.jpg',
-    'https://s3.holitech.cloud/travelqar/images/khamphakhoahoc.jpg',
-    'https://s3.holitech.cloud/travelqar/images/thapcham.jpg',
-    'https://s3.holitech.cloud/travelqar/images/thuydienialy.jpg',
-    'https://s3.holitech.cloud/travelqar/images/eogio.jpg',
-  ];
+  List<ARItem> arItems = [];
 
   @override
   void initState() {
     super.initState();
+    loadConfig();
+  }
 
-    downloadAndCacheImages();
+  Future<void> loadConfig() async {
+    try {
+      final response = await Dio().get<List<dynamic>>(
+        'https://s3.holitech.cloud/travelqar/config.json',
+      );
+
+      final data = response.data!;
+
+      arItems = data
+          .map(
+            (e) => ARItem.fromJson(e as Map<String, dynamic>),
+          )
+          .toList();
+
+      await downloadAndCacheImages();
+    } catch (e) {
+      debugPrint('Error loading config: $e');
+    }
   }
 
   Future<void> downloadAndCacheImages() async {
     final directory = await getApplicationDocumentsDirectory();
-
-    print('CACHE DIRECTORY: ${directory.path}');
-
-    List<String> paths = [];
-
-    for (final url in imageUrls) {
+    final paths = <String>[];
+    for (final item in arItems) {
       try {
+        final url = item.image;
         final fileName = url.split('/').last;
-
         final filePath = '${directory.path}/$fileName';
-
         final file = File(filePath);
 
-        if (await file.exists()) {
-          print('CACHE EXISTS: $filePath');
-        } else {
-          print('DOWNLOADING: $url');
-
+        if (!file.existsSync()) {
           await Dio().download(
             url,
             filePath,
           );
-
-          print('DOWNLOADED SUCCESS: $filePath');
         }
-
-        final savedFile = File(filePath);
-
-        print('FILE EXISTS: ${await savedFile.exists()}');
-
-        print('FILE SIZE: ${await savedFile.length()} bytes');
-
         paths.add(filePath);
       } catch (e) {
-        print('DOWNLOAD ERROR: $e');
+        debugPrint('Error downloading image: $e');
       }
     }
 
-    print('TOTAL CACHED IMAGES: ${paths.length}');
-
-    for (final path in paths) {
-      print('LOCAL PATH: $path');
+    if (mounted) {
+      setState(() {
+        cachedImagePaths = paths;
+      });
     }
-
-    setState(() {
-      cachedImagePaths = paths;
-    });
-  }
-
-  void _onImageDetected(
-    BuildContext context,
-    String? imageName,
-  ) {
-    if (imageName != null && _recognizedImage != imageName) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Recognized image: $imageName',
-          ),
-          duration: const Duration(
-            milliseconds: 2500,
-          ),
-        ),
-      );
-    }
-
-    setState(() {
-      _recognizedImage = imageName;
-    });
   }
 
   @override
@@ -209,22 +98,13 @@ class _MyAppState extends State<MyApp> {
                   return Stack(
                     children: [
                       ARQuidoView(
-                        /// truyền local file path
-                        referenceImageNames: const [
-                          'baotang.jpg',
-                          'flcsafari.jpg',
-                          'hohoankiem.jpg',
-                          'khamphakhoahoc.jpg',
-                          'thapcham.jpg',
-                          'thuydienialy.jpg',
-                          'eogio.jpg',
-                        ],
+                        referenceImageNames: arItems
+                            .map(
+                              (e) => e.image.split('/').last,
+                            )
+                            .toList(),
                         referenceImageUrl: cachedImagePaths,
-
-                        /// truyền local file path
-                        server: "https://s3.holitech.cloud/travelqar/mp4/",
-                        onImageDetected: (imageName) =>
-                            _onImageDetected(context, imageName),
+                        server: 'https://s3.holitech.cloud/travelqar/mp4/',
                       ),
                     ],
                   );

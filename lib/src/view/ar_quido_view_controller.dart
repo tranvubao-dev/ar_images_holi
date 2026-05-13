@@ -54,7 +54,7 @@ class ARQuidoViewController {
 
     _subscriptions.add(
       platformInstance.onImageDetected().listen(
-            (event) => scannerViewWidget.onImageDetected(event.imageName),
+            (event) => scannerViewWidget.onImageDetected!(event.imageName),
           ),
     );
   }
