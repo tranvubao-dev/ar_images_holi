@@ -22,7 +22,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<String> cachedImagePaths = [];
-
   List<ARItem> arItems = [];
 
   @override
@@ -60,8 +59,9 @@ class _MyAppState extends State<MyApp> {
         final fileName = url.split('/').last;
         final filePath = '${directory.path}/$fileName';
         final file = File(filePath);
-
+        print("DOWNLOAD URL: $url");
         if (!file.existsSync()) {
+          print("DOWNLOAD URL: $url");
           await Dio().download(
             url,
             filePath,

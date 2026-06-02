@@ -52,11 +52,15 @@ class ARQuidoViewController {
       );
     }
 
-    _subscriptions.add(
-      platformInstance.onImageDetected().listen(
-            (event) => scannerViewWidget.onImageDetected!(event.imageName),
-          ),
-    );
+    if (scannerViewWidget.onImageDetected != null) {
+      _subscriptions.add(
+        platformInstance.onImageDetected().listen(
+          (event) {
+            scannerViewWidget.onImageDetected?.call(event.imageName);
+          },
+        ),
+      );
+    }
   }
 
   void _connectLifecycleEventStreams() {
